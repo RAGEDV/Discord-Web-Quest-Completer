@@ -1,11 +1,19 @@
 (function() {
   'use strict';
 
-  // 1️⃣ تحميل مكتبة Flaticon CSS تلقائياً
-  const flaticonCSS = document.createElement('link');
-  flaticonCSS.rel = 'stylesheet';
-  flaticonCSS.href = 'https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css'; // رابط مكتبة الأيقونات
-  document.head.appendChild(flaticonCSS);
+  // 1️⃣ تحميل مكتبة Flaticon CSS باستخدام @import
+  const style = document.createElement('style');
+  style.textContent = `
+    @import url('https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css');
+  `;
+  document.head.appendChild(style);
+
+  // ننتظر قليلاً حتى يحمل المتصفح الخطوط قبل إنشاء الزر
+  style.onload = style.onreadystatechange = function() {
+    if (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete') {
+      createQuestButton();
+    }
+  };
 
   // 2️⃣ إنشاء الزر
   function createQuestButton() {
@@ -19,8 +27,7 @@
 
     const button = document.createElement('button');
     button.id = 'discord-quest-helper-btn';
-    // سطر CSS يظهر أيقونة Flaticon باللون الأبيض
-    button.innerHTML = '<i class="fi fi-sr-rocket-lunch" style="color:white;"></i> Run Quest Code';
+    button.innerHTML = '<i class="fi fi-sr-rocket" style="color:white;"></i> Run Quest Code';
     button.style.cssText = `
       position: fixed;
       bottom: 20px;
@@ -57,36 +64,41 @@
       chrome.runtime.sendMessage({ action: 'executeQuestCode' }, (response) => {
         if (chrome.runtime.lastError) {
           console.error('Error:', chrome.runtime.lastError);
-          button.innerHTML = '❌ Error!';
+          button.innerHTML = '<i class="fi fi-sr-square-x"></i> Error!';
           button.style.background = 'linear-gradient(135deg, #F23F42 0%, #DC3F41 100%)';
-
+          button.style.boxShadow = '0 4px 12px rgba(242, 63, 66, 0.5)';
           setTimeout(() => {
-            button.innerHTML = '<i class="fi fi-sr-rocket-lunch" style="color:white;"></i> Run Quest Code';
-            button.style.background = 'linear-gradient(135deg, #5865F2 0%, #7289DA 100%)';
+            resetButton(button);
           }, 2000);
 
         } else if (response && response.success) {
-          button.innerHTML = '✅ Code Executed!';
+          button.innerHTML = '<i class="fi fi-sr-checkbox"></i> Code Executed!';
           button.style.background = 'linear-gradient(135deg, #23A55A 0%, #2DCE7F 100%)';
-
+          // إضافة Glow أخضر
+          button.style.boxShadow = '0 0 12px 4px rgba(35, 165, 90, 0.6)';
           setTimeout(() => {
-            button.innerHTML = '<i class="fi fi-sr-rocket-lunch" style="color:white;"></i> Run Quest Code';
-            button.style.background = 'linear-gradient(135deg, #5865F2 0%, #7289DA 100%)';
+            resetButton(button);
           }, 2000);
 
         } else {
-          button.innerHTML = '❌ Error!';
+          button.innerHTML = '<i class="fi fi-sr-square-x"></i> Error!';
           button.style.background = 'linear-gradient(135deg, #F23F42 0%, #DC3F41 100%)';
-
+          button.style.boxShadow = '0 4px 12px rgba(242, 63, 66, 0.5)';
           setTimeout(() => {
-            button.innerHTML = '<i class="fi fi-sr-rocket-lunch" style="color:white;"></i> Run Quest Code';
-            button.style.background = 'linear-gradient(135deg, #5865F2 0%, #7289DA 100%)';
+            resetButton(button);
           }, 2000);
         }
       });
     });
 
     document.body.appendChild(button);
+  }
+
+  // إعادة تعيين الزر بعد 2 ثانية
+  function resetButton(button) {
+    button.innerHTML = '<i class="fi fi-sr-rocket" style="color:white;"></i> Run Quest Code';
+    button.style.background = 'linear-gradient(135deg, #5865F2 0%, #7289DA 100%)';
+    button.style.boxShadow = '0 4px 12px rgba(88, 101, 242, 0.4)';
   }
 
   // 3️⃣ مراقبة تغييرات الصفحة لتحديث الزر
